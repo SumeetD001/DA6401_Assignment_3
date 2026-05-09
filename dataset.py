@@ -29,7 +29,6 @@ class Vocab:
 
 
 def build_vocab_from_counter(counter: Counter, min_freq: int = 2) -> Vocab:
-    """Build a Vocab from a token frequency Counter."""
     itos: List[str] = list(SPECIALS)
     for token, freq in sorted(counter.items(), key=lambda x: -x[1]):
         if freq >= min_freq and token not in SPECIALS:
@@ -91,10 +90,6 @@ class Multi30kDataset(Dataset):
 
 
     def build_vocab(self) -> Tuple[Vocab, Vocab]:
-        """
-        Builds source (de) and target (en) vocabularies.
-        Includes <unk>, <pad>, <sos>, <eos>.
-        """
         src_counter: Counter = Counter()
         tgt_counter: Counter = Counter()
 
@@ -108,10 +103,6 @@ class Multi30kDataset(Dataset):
         return src_vocab, tgt_vocab
         
     def process_data(self) -> Tuple[List[List[int]], List[List[int]]]:
-        """
-        Tokenise every sentence and convert to integer index lists.
-        Prepends <sos> and appends <eos>.
-        """
         src_data: List[List[int]] = []
         tgt_data: List[List[int]] = []
 
@@ -148,12 +139,6 @@ def get_dataloaders(
     min_freq: int   = 2,
     num_workers: int = 0,
 ) -> Tuple[DataLoader, DataLoader, DataLoader, Vocab, Vocab]:
-    """
-    Build train / val / test DataLoaders sharing a common vocabulary.
-
-    Returns:
-        train_loader, val_loader, test_loader, src_vocab, tgt_vocab
-    """
     train_ds = Multi30kDataset(split="train",      min_freq=min_freq)
     val_ds   = Multi30kDataset(split="validation", min_freq=min_freq,
                                src_vocab=train_ds.src_vocab,
