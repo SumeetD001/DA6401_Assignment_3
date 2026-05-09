@@ -4,7 +4,6 @@ from torch.optim.lr_scheduler import LRScheduler
 
 
 class NoamScheduler(LRScheduler):
-           
     def __init__(
         self,
         optimizer: optim.Optimizer,
@@ -17,7 +16,6 @@ class NoamScheduler(LRScheduler):
         super().__init__(optimizer, last_epoch=last_epoch)
 
     def _get_lr_scale(self) -> float:
-       
         step = self.last_epoch + 1       
         scale = (self.d_model ** -0.5) * min(
             step ** -0.5,
@@ -25,8 +23,7 @@ class NoamScheduler(LRScheduler):
         )
         return scale
                
-    def get_lr(self) -> list:
-               
+    def get_lr(self) -> list:       
         scale = self._get_lr_scale()
         return [base_lr * scale for base_lr in self.base_lrs]
 
@@ -50,6 +47,7 @@ def get_lr_history(
 
 
 if __name__ == "__main__":
+           
     import matplotlib.pyplot as plt
 
     D_MODEL      = 512
