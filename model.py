@@ -493,7 +493,7 @@ import torch.nn.functional as F
 #  e.g. URL: https://drive.google.com/file/d/1AbCdEfGhIj.../view
 #       ID:  "1AbCdEfGhIj..."
 # ══════════════════════════════════════════════════════════════════════
-GDRIVE_FILE_ID  = "YOUR_GDRIVE_FILE_ID_HERE"   # <-- replace this
+GDRIVE_FILE_ID  = "1tGSS4ytD7XcwiR0PEFBtIeQHDcj54fJe"   # <-- replace this
 CHECKPOINT_PATH = "checkpoint_best.pt"          # local cache path
 
 
