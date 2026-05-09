@@ -24,6 +24,7 @@ class LabelSmoothingLoss(nn.Module):
         )
 
         smooth_dist.scatter_(1, target.unsqueeze(1), self.confidence)
+
         smooth_dist[:, self.pad_idx] = 0.0
 
         pad_mask = (target == self.pad_idx)
@@ -49,6 +50,7 @@ def run_epoch(
 ) -> float:
 
     model.train(is_train)
+
     total_loss = 0.0
     total_steps = 0
 
@@ -66,6 +68,7 @@ def run_epoch(
             logits = model(src, tgt_input, src_mask, tgt_mask)
 
             batch_size, tgt_len, vocab_size = logits.shape
+
             logits_flat = logits.reshape(-1, vocab_size)
             labels_flat = tgt_labels.reshape(-1)
 
@@ -74,7 +77,12 @@ def run_epoch(
             if is_train:
                 optimizer.zero_grad()
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+                torch.nn.utils.clip_grad_norm_(
+                    model.parameters(),
+                    max_norm=1.0
+                )
+
                 optimizer.step()
 
                 if scheduler is not None:
@@ -84,9 +92,14 @@ def run_epoch(
             total_steps += 1
 
     avg_loss = total_loss / max(total_steps, 1)
+
     mode_str = "TRAIN" if is_train else "VALID"
 
-    print(f"Epoch {epoch_num:03d} [{mode_str}] loss={avg_loss:.4f}")
+    print(
+        f"Epoch {epoch_num:03d} "
+        f"[{mode_str}] "
+        f"loss={avg_loss:.4f}"
+    )
 
     return avg_loss
 
@@ -106,18 +119,39 @@ def greedy_decode(
     src = src.to(device)
     src_mask = src_mask.to(device)
 
-    memory = model.encode(src, src_mask)
+    memory = model.encode(
+        src,
+        src_mask
+    )
 
-    ys = torch.tensor([[start_symbol]], dtype=torch.long, device=device)
+    ys = torch.tensor(
+        [[start_symbol]],
+        dtype=torch.long,
+        device=device
+    )
 
     for _ in range(max_len - 1):
-        tgt_mask = make_tgt_mask(ys, pad_idx=PAD_IDX).to(device)
+        tgt_mask = make_tgt_mask(
+            ys,
+            pad_idx=PAD_IDX
+        ).to(device)
 
-        logits = model.decode(memory, src_mask, ys, tgt_mask)
+        logits = model.decode(
+            memory,
+            src_mask,
+            ys,
+            tgt_mask
+        )
 
-        next_token = logits[:, -1, :].argmax(dim=-1, keepdim=True)
+        next_token = logits[:, -1, :].argmax(
+            dim=-1,
+            keepdim=True
+        )
 
-        ys = torch.cat([ys, next_token], dim=1)
+        ys = torch.cat(
+            [ys, next_token],
+            dim=1
+        )
 
         if next_token.item() == end_symbol:
             break
@@ -133,7 +167,7 @@ def evaluate_bleu(
     max_len: int = 100,
 ) -> float:
 
-    from nltk.translate.bleu_score import corpus_bleu, SmoothingFunction
+    from bleu import corpus_bleu
 
     model.eval()
 
@@ -179,21 +213,28 @@ def evaluate_bleu(
 
                     return tokens
 
-                hyp = ids_to_tokens(pred_ids)
-                ref = ids_to_tokens(tgt[i].tolist())
+                hyp = " ".join(
+                    ids_to_tokens(pred_ids)
+                )
+
+                ref = " ".join(
+                    ids_to_tokens(
+                        tgt[i].tolist()
+                    )
+                )
 
                 hypotheses.append(hyp)
-                references.append([ref])
-
-    smoother = SmoothingFunction().method1
+                references.append(ref)
 
     bleu_score = corpus_bleu(
         references,
-        hypotheses,
-        smoothing_function=smoother
-    ) * 100.0
+        hypotheses
+    )
 
-    print(f"Test BLEU: {bleu_score:.2f}")
+    print(
+        f"Test BLEU: "
+        f"{bleu_score:.2f}"
+    )
 
     return bleu_score
 
@@ -223,11 +264,17 @@ def save_checkpoint(
             "optimizer_state_dict": optimizer.state_dict(),
             "scheduler_state_dict": scheduler.state_dict(),
             "model_config": model_config,
+            "src_vocab": model.src_vocab,
+            "tgt_vocab": model.tgt_vocab,
         },
         path,
     )
 
-    print(f"Checkpoint saved → {path} (epoch {epoch})")
+    print(
+        f"Checkpoint saved → "
+        f"{path} "
+        f"(epoch {epoch})"
+    )
 
 
 def load_checkpoint(
@@ -256,9 +303,16 @@ def load_checkpoint(
             checkpoint["scheduler_state_dict"]
         )
 
-    epoch = checkpoint.get("epoch", 0)
+    epoch = checkpoint.get(
+        "epoch",
+        0
+    )
 
-    print(f"Checkpoint loaded ← {path} (epoch {epoch})")
+    print(
+        f"Checkpoint loaded ← "
+        f"{path} "
+        f"(epoch {epoch})"
+    )
 
     return epoch
 
@@ -289,9 +343,16 @@ def run_training_experiment() -> None:
 
     cfg = wandb.config
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "cpu"
+    )
 
-    print(f"Using device: {device}")
+    print(
+        f"Using device: "
+        f"{device}"
+    )
 
     train_loader, val_loader, test_loader, src_vocab, tgt_vocab = get_dataloaders(
         batch_size=cfg.batch_size,
@@ -299,8 +360,10 @@ def run_training_experiment() -> None:
     )
 
     print(
-        f"Src vocab size: {len(src_vocab)} | "
-        f"Tgt vocab size: {len(tgt_vocab)}"
+        f"Src vocab size: "
+        f"{len(src_vocab)} | "
+        f"Tgt vocab size: "
+        f"{len(tgt_vocab)}"
     )
 
     model = Transformer(
@@ -313,13 +376,19 @@ def run_training_experiment() -> None:
         dropout=cfg.dropout,
     ).to(device)
 
+    model.src_vocab = src_vocab
+    model.tgt_vocab = tgt_vocab
+
     n_params = sum(
         p.numel()
         for p in model.parameters()
         if p.requires_grad
     )
 
-    print(f"Trainable parameters: {n_params:,}")
+    print(
+        f"Trainable parameters: "
+        f"{n_params:,}"
+    )
 
     wandb.config.update(
         {"n_params": n_params},
@@ -412,7 +481,10 @@ def run_training_experiment() -> None:
         "test_bleu": bleu
     })
 
-    print(f"\nFinal Test BLEU: {bleu:.2f}")
+    print(
+        f"\nFinal Test BLEU: "
+        f"{bleu:.2f}"
+    )
 
     wandb.finish()
 
