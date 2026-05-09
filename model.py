@@ -800,7 +800,7 @@ class Transformer(nn.Module):
             gdown.download(url, CHECKPOINT_PATH, quiet=False)
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        return torch.load(CHECKPOINT_PATH, map_location=device)
+        return torch.load(CHECKPOINT_PATH, map_location=device, weights_only=False)
 
     def _get_spacy_de(self):
         if self._spacy_de is None:
