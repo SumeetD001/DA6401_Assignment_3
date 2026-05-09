@@ -13,7 +13,6 @@ assignment3/
 ├── dataset.py        # Multi30k loading, spaCy tokenisation, Vocab
 ├── lr_scheduler.py   # Noam learning-rate scheduler
 ├── train.py          # Training loop, greedy decode, BLEU eval, checkpointing
-├── experiments.py    # All 5 W&B report experiments
 ├── requirements.txt
 └── README.md
 ```
@@ -32,9 +31,6 @@ python -m spacy download en_core_web_sm
  
 # 3. NLTK data (for BLEU)
 python -c "import nltk; nltk.download('punkt')"
- 
-# 4. Log in to W&B
-wandb login
 ```
  
 ---
