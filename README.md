@@ -2,6 +2,9 @@
  
 PyTorch implementation of the Transformer architecture from  
 [Vaswani et al., 2017](https://arxiv.org/abs/1706.03762) for German→English translation on the Multi30k dataset.
+
+
+WandB Report Link: https://wandb.ai/sumeet01-iitmaana/da6401-a3-1/reports/Task-2-WandB-Report-for-Assignment-3--VmlldzoxNjgyOTUzNA?accessToken=iupdp6sbm9y5kxqbww7obw4ikpk2l8nd0tc4kiwuyzli3pquaipbhv6qjed4ioq9
  
 ---
  
